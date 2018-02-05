@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Lab2</string>
+    <string name="app_name">Lab3</string>
     <string name="hello_message">Hello World!</string>
     <string name="ButtonText">I\'m a button</string>
     <string name="login">login</string>
@@ -9,4 +9,8 @@
     <string name="switch1">What does this do?</string>
     <string name="check">Check box</string>
     <string name="radio">Radio button</string>
+    <string name="dialog_message">Do you want to finish this activity?</string>
+    <string name="dialog_title">Quit Activity</string>
+    <string name="ok">OK</string>
+    <string name="cancel">CANCEL</string>
 </resources>
