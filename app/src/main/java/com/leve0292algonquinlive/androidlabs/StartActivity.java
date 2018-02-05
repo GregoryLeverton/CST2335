@@ -17,15 +17,24 @@ public class StartActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
 
-        Button button1 = (Button)findViewById(R.id.button1);
+        Button button1 = findViewById(R.id.button1);
 
-        button1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        button1.setOnClickListener(e -> {
                 Intent secondIntent = new Intent(StartActivity.this,
                         ListItemsActivity.class);
                 startActivityForResult(secondIntent, 50);
-            }
+
+        });
+
+        Button button2 = findViewById(R.id.button2);
+
+        button2.setOnClickListener(e -> {
+
+                Log.i(ACTIVITY_NAME, "User clicked Start Chat");
+                Intent thirdIntent = new Intent(StartActivity.this,
+                        ChatWindow.class);
+                startActivity(thirdIntent);
+
         });
 
     }
