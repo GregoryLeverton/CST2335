@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Laboratoire5</string>
+    <string name="app_name">Laboratoire6</string>
     <string name="hello_message">Bonjour le monde!</string>
     <string name="ButtonText">Je suis un bouton</string>
     <string name="login">s\'identifier</string>
@@ -15,5 +15,10 @@
     <string name="cancel">Non</string>
     <string name ="chat">Démarrer la discussion</string>
     <string name="Send">Envoyer</string>
+    <string name="weather">Prévisions Météorologiques</string>
+    <string name="current">Température actuelle: </string>
+    <string name="max">Max Température: </string>
+    <string name="min">Min Température: </string>
+    <string name="wind">Vitesse du vent: </string>
 
 </resources>

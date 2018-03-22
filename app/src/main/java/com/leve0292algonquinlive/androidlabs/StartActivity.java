@@ -26,6 +26,7 @@ public class StartActivity extends Activity {
 
         });
 
+
         Button button2 = findViewById(R.id.button2);
 
         button2.setOnClickListener(e -> {
@@ -36,6 +37,15 @@ public class StartActivity extends Activity {
                 startActivity(thirdIntent);
 
         });
+        Button button3 = findViewById(R.id.button3);
+
+        button3.setOnClickListener(e -> {
+            Intent fourthIntent = new Intent(StartActivity.this,
+                    WeatherForcast.class);
+            startActivity(fourthIntent);
+
+        });
+
 
     }
     @Override
