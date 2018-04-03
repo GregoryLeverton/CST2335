@@ -3,7 +3,8 @@
     package="com.leve0292algonquinlive.androidlabs">
 
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
 
@@ -23,10 +24,11 @@
             </intent-filter>
         </activity>
         <activity android:name=".ListItemsActivity" />
-        <activity android:name=".ChatWindow"></activity>
+        <activity android:name=".ChatWindow" />
         <activity
             android:name=".WeatherForcast"
-            android:label="@string/title_activity_weather_forcast"></activity>
+            android:label="@string/title_activity_weather_forcast" />
+        <activity android:name=".MessageDetails" android:theme="@style/Theme.AppCompat"/>
     </application>
 
 </manifest>

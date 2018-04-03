@@ -1,8 +1,11 @@
 package com.leve0292algonquinlive.androidlabs;
 
 import android.app.Activity;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -24,23 +27,30 @@ import java.util.ArrayList;
 public class ChatWindow extends Activity {
     protected static final String ACTIVITY_NAME ="ChatWindow";
     protected SQLiteDatabase db;
+    protected boolean FrameExists;
+    protected Cursor cursor;
 
+    String tableName = ChatDatabaseHelper.TABLE_NAME;
+    String keyID = ChatDatabaseHelper.KEY_ID;
+    String keyMsg = ChatDatabaseHelper.KEY_MESSAGE;
     ArrayList<String> messages = new ArrayList<>();
+    ChatAdapter messageAdapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(ACTIVITY_NAME, "In onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_window);
+        FrameExists = (findViewById(R.id.frame)!=null);
 
         ListView chat = findViewById(R.id.chat);
         EditText textInput = findViewById(R.id.chatText);
         Button send = findViewById(R.id.send_button);
-        ChatAdapter messageAdapter =new ChatAdapter( this );
+        messageAdapter =new ChatAdapter( this );
         chat.setAdapter (messageAdapter);
         ChatDatabaseHelper myOpener = new ChatDatabaseHelper(this);
         db = myOpener.getWritableDatabase();
 
-        Cursor cursor = db.query(false, "Messages", new String[]{"Message"},null, null,null, null, null,null );
+        cursor =db.rawQuery("SELECT * FROM "+ChatDatabaseHelper.TABLE_NAME+";", null);
         cursor.moveToFirst();
 
         while(!cursor.isAfterLast() ) {
@@ -53,32 +63,76 @@ public class ChatWindow extends Activity {
             }
         }
 
-       /* textInput.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (keyCode == KeyEvent.KEYCODE_ENTER) {
-                    messages.add(textInput.getText().toString());
-                    ContentValues cv = new ContentValues();
-                    cv.put("Message",textInput.getText().toString()  );
-                    db.insert(ChatDatabaseHelper.TABLE_NAME, "Null replacement value", cv);
-                    messageAdapter.notifyDataSetChanged(); //this restarts the process of getCount() & getView()
-                    textInput.setText("");
-                    return true;
-                }
-                return false;
-            }
-        });*/
-
-
         send.setOnClickListener(e ->{
                 messages.add(textInput.getText().toString());
                 ContentValues cv = new ContentValues();
-                cv.put("Message",textInput.getText().toString()  );
+                cv.put(ChatDatabaseHelper.KEY_MESSAGE,textInput.getText().toString()  );
                 db.insert(ChatDatabaseHelper.TABLE_NAME, "Null replacement value", cv);
-                messageAdapter.notifyDataSetChanged(); //this restarts the process of getCount() & getView()
+            cursor =db.rawQuery("SELECT * FROM "+ChatDatabaseHelper.TABLE_NAME+";", null);
+
+            cursor.moveToFirst();
+
+            messageAdapter.notifyDataSetChanged(); //this restarts the process of getCount() & getView()
                 textInput.setText("");
             }
         );
+
+        chat.setOnItemClickListener((adapterView, view, position, id) ->{
+                String msg =messageAdapter.getItem(position);
+                long ID = id;
+                Long id_inChat = messageAdapter.getId(position);
+
+                MessageFragment myFragment = new MessageFragment();
+                Bundle infoToPass = new Bundle();
+                infoToPass.putString("Message", msg);
+                infoToPass.putLong("ID", ID);
+                infoToPass.putLong("IDInChat", id_inChat);
+
+
+
+                //if on tablet:
+                if(FrameExists)
+                {
+
+                    myFragment.setArguments( infoToPass );
+                    myFragment.setIsTablet(true);
+                    getFragmentManager().beginTransaction().replace(R.id.frame,myFragment).commit();
+                }
+                else //this is a phone:
+                {
+                    myFragment.setIsTablet(false);
+                    Intent next = new Intent(ChatWindow.this, MessageDetails.class);
+                    next.putExtra("ChatItem", infoToPass);
+                    startActivityForResult(next, 1, infoToPass);
+                }
+
+        });
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        if(requestCode == 1 && resultCode == Activity.RESULT_OK){
+            Bundle extras = data.getExtras();
+            long id = extras.getLong("DeleteID");
+            long id_inChat = extras.getLong("IDInChat");
+           // String query = "DELETE FROM Messages WHERE "+ keyID + " = " +id + ";";
+            db.delete(ChatDatabaseHelper.TABLE_NAME, ChatDatabaseHelper.KEY_ID + " = ?", new String[] {Long.toString(id)}) ;//.execSQL(query);
+            messages.remove((int)id_inChat);
+            cursor =db.rawQuery("SELECT * FROM "+ChatDatabaseHelper.TABLE_NAME+";", null);
+            cursor.moveToFirst();
+            messageAdapter.notifyDataSetChanged();
+        }
+    }
+
+    public void deleteForTablet(long idInDatabase, long idInChat){
+        long id = idInDatabase;
+        long id_inChat = idInChat;
+        db.delete(ChatDatabaseHelper.TABLE_NAME, ChatDatabaseHelper.KEY_ID + " = ?", new String[] {Long.toString(id)}) ;
+        messages.remove((int)id_inChat);
+        cursor =db.rawQuery("SELECT * FROM "+ChatDatabaseHelper.TABLE_NAME+";", null);
+        cursor.moveToFirst();
+        messageAdapter.notifyDataSetChanged();
 
     }
 
@@ -96,6 +150,11 @@ public class ChatWindow extends Activity {
 
         public int getCount(){
             return messages.size();
+        }
+
+        public long getItemId(int position){
+            cursor.moveToPosition(position);
+            return cursor.getLong(cursor.getColumnIndex("ID"));
         }
 
         public String getItem(int position){
@@ -125,7 +184,7 @@ public class ChatWindow extends Activity {
 
     public class ChatDatabaseHelper extends SQLiteOpenHelper {
         public static final String DATABASE_NAME = "Messages.db";
-        public static final int VERSION_NUM = 4;
+        public static final int VERSION_NUM = 5;
         public static final String TABLE_NAME = "Messages";
         public static final String KEY_ID = "ID";
         public static final String KEY_MESSAGE= "Message";
@@ -136,7 +195,7 @@ public class ChatWindow extends Activity {
         public void onCreate(SQLiteDatabase db)
         {
             Log.i("ChatDatabaseHelper", "Calling onCreate");
-            db.execSQL("CREATE TABLE " + TABLE_NAME + "( KEY_ID INTEGER PRIMARY KEY AUTOINCREMENT, "
+            db.execSQL("CREATE TABLE " + TABLE_NAME + "( "+KEY_ID+" INTEGER PRIMARY KEY AUTOINCREMENT, "
                     + KEY_MESSAGE + " text);" );
         }
         public void onUpgrade(SQLiteDatabase db, int oldVer, int newVer) // newVer > oldVer
